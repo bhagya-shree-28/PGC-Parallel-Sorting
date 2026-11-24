@@ -1,6 +1,5 @@
 # Experiment 8 — Parallel Sorting on the GPU
 
-> **Theme 8 of 10** · CUDA · Bitonic Sort vs Thrust Sort vs CPU `std::sort`
 
 ---
 
@@ -9,16 +8,15 @@
 1. [Aim](#1-aim)
 2. [Tools and Setup](#2-tools-and-setup)
 3. [Background — The Concepts in Simple Words](#3-background--the-concepts-in-simple-words)
-4. [Project Files](#4-project-files)
-5. [Step-by-Step Procedure](#5-step-by-step-procedure)
-6. [How the Timing Was Measured](#6-how-the-timing-was-measured)
-7. [Results — Run 1 (First Version)](#7-results--run-1-first-version-bitonic_sortcu)
-8. [Results — Run 2 (Improved Benchmark)](#8-results--run-2-improved-benchmark-bitonic_benchmarkcu)
-9. [Graphs](#9-graphs)
-10. [Analysis and Observations](#10-analysis-and-observations)
-11. [Troubleshooting (Errors I Hit and How I Fixed Them)](#11-troubleshooting-errors-i-hit-and-how-i-fixed-them)
-12. [Conclusion](#12-conclusion)
-13. [Screenshot Index](#13-screenshot-index)
+4. [Step-by-Step Procedure](#4-step-by-step-procedure)
+5. [How the Timing Was Measured](#5-how-the-timing-was-measured)
+6. [Results — Run 1 (First Version)](#6-results--run-1-first-version-bitonic_sortcu)
+7. [Results — Run 2 (Improved Benchmark)](#7-results--run-2-improved-benchmark-bitonic_benchmarkcu)
+8. [Graphs](#8-graphs)
+9. [Analysis and Observations](#9-analysis-and-observations)
+10. [Troubleshooting (Errors I Hit and How I Fixed Them)](#10-troubleshooting-errors-i-hit-and-how-i-fixed-them)
+11. [Conclusion](#11-conclusion)
+
 
 ---
 
@@ -45,8 +43,7 @@ Array sizes tested: **2¹⁶ (65,536) to 2²⁴ (16,777,216)** elements.
 | GPU timing | **CUDA events** (`cudaEvent_t`) |
 | GPU library sort | **Thrust** (`thrust::sort`, ships with the CUDA Toolkit) |
 | CPU baseline | `std::sort` (C++17) |
-| CPU model | *(add your CPU model here)* |
-| Date of experiment | 23 November 2026 |
+
 
 ![GPU check](screenshots/01_gpu_check_nvidia_smi.jpeg)
 
@@ -100,37 +97,11 @@ The standard C++ sort (an introsort, O(n log n)) running on a **single CPU threa
 | **Kernel time** | Time spent only *inside* the GPU doing the sorting. |
 | **Total time** | Kernel time **plus** copying the array from CPU memory to GPU (Host→Device) and the sorted result back (Device→Host). |
 
+
 Copying across the PCIe bus is not free, so **total time is the fair number** to compare against the CPU — the CPU does not need to copy anything.
-
-> **Speedup** in this experiment = **CPU time ÷ GPU total time** (I verified this from the printed values, e.g. 1201.6 / 109.647 = 10.96×).
-
 ---
 
-## 4. Project Files
-
-All files are inside `C:\Users\User\Desktop\Experiment8_ParallelSorting`.
-
-| File | What it is |
-|---|---|
-| `bitonic_sort.cu` | **Version 1.** Runs each array size once and compares CPU, Bitonic GPU, and Thrust GPU. Writes `sorting_results.csv`. |
-| `bitonic_sort_backup.cu` | A backup copy of version 1 (made before improving the code). |
-| `bitonic_benchmark.cu` | **Version 2 (improved).** Adds a **GPU warm-up** and **averages several timed runs**. Writes `improved_sorting_results.csv`. |
-| `bitonic_sort.exe` / `bitonic_benchmark.exe` | Compiled programs. |
-| `sorting_results.csv` | Results of Run 1. |
-| `improved_sorting_results.csv` | Results of Run 2. |
-
-Both programs follow the same plan:
-
-1. Fill an array with random numbers.
-2. Sort a copy on the **CPU** with `std::sort` and time it.
-3. Copy to the GPU, sort with the **bitonic sort kernel**, copy back — time it with CUDA events.
-4. Copy to the GPU, sort with **`thrust::sort`**, copy back — time it with CUDA events.
-5. **Verify** that each output is really sorted (prints `YES` / `PASSED`).
-6. Compute the speedups and save a row to the CSV file.
-
----
-
-## 5. Step-by-Step Procedure
+## 4. Step-by-Step Procedure
 
 ### Step 1 — Open the right terminal
 
@@ -153,7 +124,7 @@ Expected: a path ending in `...\bin\Hostx64\x64\cl.exe`.
 
 ### Step 3 — Create the project folder on the Desktop
 
-> Do **not** create it inside `C:\Program Files\...` — Windows gives *"Access is denied"* there.
+
 
 ```bat
 cd /d "%USERPROFILE%\Desktop"
@@ -177,7 +148,7 @@ Paste the code (CPU `std::sort`, bitonic kernel, `thrust::sort`, CUDA-event timi
 set CL=/Zc:preprocessor
 ```
 
-This tells MSVC to use the modern, standard-conforming preprocessor that newer CUDA headers require. (See [Troubleshooting](#11-troubleshooting-errors-i-hit-and-how-i-fixed-them).)
+This tells MSVC to use the modern, standard-conforming preprocessor that newer CUDA headers require.
 
 ### Step 6 — Compile
 
@@ -218,7 +189,7 @@ copy bitonic_sort.cu bitonic_sort_backup.cu
 
 ### Step 9 — Build the improved benchmark
 
-The first run showed a suspicious spike at 2¹⁶ (see the analysis). To get fair numbers, I wrote `bitonic_benchmark.cu`, which adds a **warm-up** and **averaging**:
+The first run showed a suspicious spike at 2¹⁶ . To get fair numbers, I wrote `bitonic_benchmark.cu`, which adds a **warm-up** and **averaging**:
 
 ```bat
 notepad bitonic_benchmark.cu
@@ -248,7 +219,7 @@ You should see both `.exe` files and both `.csv` files.
 
 ---
 
-## 6. How the Timing Was Measured
+## 5. How the Timing Was Measured
 
 - **CPU time** — measured around the `std::sort` call.
 - **GPU time** — measured with **CUDA events**. The GPU runs asynchronously, so a normal CPU timer would be wrong; CUDA events are timestamps recorded *on the GPU itself*:
@@ -269,7 +240,7 @@ The two versions differ like this:
 
 ---
 
-## 7. Results — Run 1 (First Version, `bitonic_sort.cu`)
+## 6. Results — Run 1 (First Version, `bitonic_sort.cu`)
 
 All times are in **milliseconds (ms)**. Every CPU, Bitonic, and Thrust output was reported as **sorted = YES**.
 
@@ -289,11 +260,9 @@ Screenshots: [2¹⁶–2¹⁸](screenshots/04_first_run_2e16_to_2e18.jpeg) · [2
 
 ![Run 1 sample](screenshots/04_first_run_2e16_to_2e18.jpeg)
 
-> ⚠️ **Notice the first row:** the bitonic kernel took **267 ms** for only 65,536 elements, while the *next*, bigger array took just 1.1 ms. That is not the algorithm — it is a **cold-start cost** (see Section 10.1). Run 2 fixes it.
-
 ---
 
-## 8. Results — Run 2 (Improved Benchmark, `bitonic_benchmark.cu`)
+## 7. Results — Run 2 (Improved Benchmark, `bitonic_benchmark.cu`)
 
 Each value is an **average** after a **GPU warm-up**. Every Bitonic and Thrust result printed **verification: PASSED**.
 
@@ -322,7 +291,7 @@ File: improved_sorting_results.csv
 
 ---
 
-## 9. Graphs
+## 8. Graphs
 
 ![Time and speedup charts](speedup_chart.png)
 
@@ -331,17 +300,16 @@ File: improved_sorting_results.csv
 
 ---
 
-## 10. Analysis and Observations
+## 9. Analysis and Observations
 
-### 10.1 Why was Run 1 so slow at 2¹⁶ (267 ms)?
+### 9.1 Why was Run 1 so slow at 2¹⁶ (267 ms)?
 
 The very first CUDA call in a program has to **create the CUDA context, initialise the driver, and load the kernel onto the GPU**. In Run 1, the first thing timed was the bitonic kernel at 2¹⁶, so it paid that one-time cost (≈ 267 ms), making the speedup look like **0.0136×** (the GPU looked 70× *slower* than the CPU). By 2¹⁷ the GPU was "warm" and the same kernel on twice the data took just **1.1 ms**.
 
 **Fix in Run 2:** a **warm-up** run before timing, plus averaging. The 2¹⁶ bitonic kernel dropped from **267.651 ms → 0.978 ms**, and the speedup went from 0.0136× to **2.88×**.
 
-> Lesson: always warm up the GPU before benchmarking it.
 
-### 10.2 The GPU wins at every size
+### 9.2 The GPU wins at every size
 
 With warm-up, both GPU methods are faster than the CPU for **all** sizes from 2¹⁶ to 2²⁴. At 2²⁴ (≈ 16.8 million elements):
 
@@ -349,7 +317,7 @@ With warm-up, both GPU methods are faster than the CPU for **all** sizes from 2�
 - Bitonic GPU: **109.6 ms** → **10.96× faster**
 - Thrust GPU: **25.2 ms** → **47.72× faster**
 
-### 10.3 Thrust beats the hand-written Bitonic sort
+### 9.3 Thrust beats the hand-written Bitonic sort
 
 At every size, `thrust::sort` is faster than the bitonic sort. Reasons:
 
@@ -359,7 +327,7 @@ At every size, `thrust::sort` is faster than the bitonic sort. Reasons:
 
 At 2²⁴, the *kernel-only* gap is huge: **87.7 ms (bitonic) vs 3.9 ms (Thrust)** — about **22× faster** for Thrust.
 
-### 10.4 Bitonic speedup peaks at 2²² and then drops
+### 9.4 Bitonic speedup peaks at 2²² and then drops
 
 | Size | Bitonic speedup (Run 2) |
 |---|---|
@@ -370,7 +338,7 @@ At 2²⁴, the *kernel-only* gap is huge: **87.7 ms (bitonic) vs 3.9 ms (Thrust)
 
 This is expected: bitonic sort's work grows as **n·log²n**, and once the array no longer fits comfortably in the GPU's cache, every extra step becomes a full trip to slow global memory. The bitonic **kernel time jumps ~13×** from 2²² to 2²⁴ (6.76 ms → 87.7 ms) even though the data is only 4× bigger, while the CPU time grows roughly 4×. So the advantage shrinks. Thrust does not suffer from this, so its speedup keeps rising.
 
-### 10.5 Data-transfer cost (kernel vs. total)
+### 9.5 Data-transfer cost (kernel vs. total)
 
 The gap between *total* and *kernel* time is the cost of copying over PCIe:
 
@@ -384,13 +352,13 @@ The gap between *total* and *kernel* time is the cost of copying over PCIe:
 - The copy cost is almost **identical** for both methods (same amount of data moved) and grows linearly with n.
 - For **Thrust at 2²⁴**, the kernel takes only 3.9 ms but copying takes ~21 ms — i.e. **~84 % of its total time is data transfer**. The sort itself is so fast that the PCIe copy dominates. Sorting on the GPU pays off most when the data already lives on the GPU or is reused for further GPU work.
 
-### 10.6 Run 1 vs Run 2 — are the numbers consistent?
+### 9.6 Run 1 vs Run 2 — are the numbers consistent?
 
 Mostly yes. CPU times agree within a few percent (e.g. 2²⁰: 67.58 vs 67.28 ms). The bigger differences (for example Thrust total at 2²⁴: 15.4 ms vs 25.2 ms) come from Run 1 being a **single sample** while Run 2 is an **average**, and from normal run-to-run variation (memory allocation, clocks, background processes). Run 2 is the more trustworthy set, and it is the one used for the graphs and conclusions.
 
 ---
 
-## 11. Troubleshooting (Errors I Hit and How I Fixed Them)
+## 10. Troubleshooting (Errors I Hit and How I Fixed Them)
 
 | # | Error message | Cause | Fix |
 |---|---|---|---|
@@ -404,7 +372,7 @@ Mostly yes. CPU times agree within a few percent (e.g. 2²⁰: 67.58 vs 67.28 ms
 
 ---
 
-## 12. Conclusion
+## 11. Conclusion
 
 - A **GPU bitonic sort** was implemented in CUDA and compared against **`thrust::sort`** and the CPU's **`std::sort`** for sizes **2¹⁶ to 2²⁴**; all outputs were verified as correctly sorted.
 - After a GPU warm-up and averaging, the GPU was faster than the CPU at **every** size.
@@ -413,23 +381,5 @@ Mostly yes. CPU times agree within a few percent (e.g. 2²⁰: 67.58 vs 67.28 ms
 - Bitonic sort's speedup falls at large sizes due to its **O(n·log²n)** work and many global-memory passes.
 - **Data transfer** between CPU and GPU takes a large share of the total time (up to ~84 % for Thrust at 2²⁴).
 - **Benchmarking lesson:** the first GPU call is slow (context start-up); always **warm up** and **average** several runs.
-
-**In practice:** use a tuned library like Thrust for real work; write bitonic sort to learn how GPU-parallel algorithms (fixed compare-swap networks) are designed.
-
 ---
 
-## 13. Screenshot Index
-
-| # | File | What it shows |
-|---|---|---|
-| 1 | `screenshots/01_gpu_check_nvidia_smi.jpeg` | `nvidia-smi`, `where cl`, and the "Access is denied" mkdir attempts |
-| 2 | `screenshots/02_setup_and_cl_exe_error.jpeg` | Creating the folder on Desktop and the `cl.exe` not-found error |
-| 3 | `screenshots/03_preprocessor_fix_and_first_run_start.jpeg` | `/Zc:preprocessor` error, fix, successful compile, start of Run 1 |
-| 4 | `screenshots/04_first_run_2e16_to_2e18.jpeg` | Run 1 results, 2¹⁶–2¹⁸ |
-| 5 | `screenshots/05_first_run_2e18_to_2e21.jpeg` | Run 1 results, 2¹⁸–2²¹ |
-| 6 | `screenshots/06_first_run_2e22_to_2e24.jpeg` | Run 1 results, 2²²–2²⁴ and completion |
-| 7 | `screenshots/07_build_improved_benchmark.jpeg` | Backup, compiling and starting the improved benchmark |
-| 8 | `screenshots/08_improved_2e16_to_2e19.jpeg` | Run 2 results, warm-up and 2¹⁶–2¹⁹ |
-| 9 | `screenshots/09_improved_2e19_to_2e22.jpeg` | Run 2 results, 2¹⁹–2²² |
-| 10 | `screenshots/10_improved_2e22_to_2e24.jpeg` | Run 2 results, 2²²–2²⁴ and completion |
-| 11 | `screenshots/11_final_directory_listing.jpeg` | Final `dir` listing with all files |
