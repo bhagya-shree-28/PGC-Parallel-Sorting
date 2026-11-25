@@ -179,14 +179,8 @@ bitonic_sort.exe
 
 The program tests every size from 2¹⁶ to 2²⁴ and prints a block of results for each, then saves `sorting_results.csv`.
 
-### Step 8 — Look at the results and make a backup
 
-```bat
-notepad sorting_results.csv
-copy bitonic_sort.cu bitonic_sort_backup.cu
-```
-
-### Step 9 — Build the improved benchmark
+### Step 8 — Build the improved benchmark
 
 The first run showed a suspicious spike at 2¹⁶ . To get fair numbers, I wrote `bitonic_benchmark.cu`, which adds a **warm-up** and **averaging**:
 
@@ -196,7 +190,7 @@ set CL=/Zc:preprocessor
 nvcc -O3 -std=c++17 bitonic_benchmark.cu -o bitonic_benchmark.exe
 ```
 
-### Step 10 — Run the improved benchmark
+### Step 9 — Run the improved benchmark
 
 ```bat
 bitonic_benchmark.exe
@@ -206,14 +200,13 @@ This prints "Performing GPU warm-up…", then the averaged results for every siz
 
 ![Build improved benchmark](screenshots/07_build_improved_benchmark.jpeg)
 
-### Step 11 — Confirm the output files
+### Step 10 — Confirm the output files
 
 ```bat
 dir
 ```
 
-You should see both `.exe` files and both `.csv` files.
-
+You should see `.exe` file.
 ![Final directory](screenshots/11_final_directory_listing.jpeg)
 
 ---
@@ -229,13 +222,6 @@ You should see both `.exe` files and both `.csv` files.
 - **Kernel time** — only the sorting step. **Total time** — copy-in + sorting + copy-out.
 - **Verification** — every result is checked to be in non-decreasing order before it is trusted.
 
-The two versions differ like this:
-
-| | Version 1 (`bitonic_sort.cu`) | Version 2 (`bitonic_benchmark.cu`) |
-|---|---|---|
-| GPU warm-up | No | **Yes** |
-| Runs per size | 1 | **Several, averaged** |
-| Output file | `sorting_results.csv` | `improved_sorting_results.csv` |
 
 ---
 
@@ -261,7 +247,7 @@ Screenshots: [2¹⁶–2¹⁸](screenshots/04_first_run_2e16_to_2e18.jpeg) · [2
 
 ---
 
-## 7. Results — Run 2 (Improved Benchmark, `bitonic_benchmark.cu`)
+## 7. Results — Run 2 (Improved Benchmark)
 
 Each value is an **average** after a **GPU warm-up**. Every Bitonic and Thrust result printed **verification: PASSED**.
 
@@ -280,13 +266,6 @@ Each value is an **average** after a **GPU warm-up**. Every Bitonic and Thrust r
 Screenshots: [2¹⁶–2¹⁹](screenshots/08_improved_2e16_to_2e19.jpeg) · [2¹⁹–2²²](screenshots/09_improved_2e19_to_2e22.jpeg) · [2²²–2²⁴ + completion](screenshots/10_improved_2e22_to_2e24.jpeg)
 
 ![Run 2 final output](screenshots/10_improved_2e22_to_2e24.jpeg)
-
-Run 2 ended with:
-
-```
-IMPROVED BENCHMARK COMPLETED!
-File: improved_sorting_results.csv
-```
 
 ---
 
