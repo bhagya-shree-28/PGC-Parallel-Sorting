@@ -7,7 +7,7 @@
 
 1. [Aim](#1-aim)
 2. [Tools and Setup](#2-tools-and-setup)
-3. [Concepts](#3-background--the-concepts-in-simple-words)
+3. [Concepts](#3-concepts)
 4. [Step-by-Step Procedure](#4-step-by-step-procedure)
 5. [How the Timing Was Measured](#5-how-the-timing-was-measured)
 6. [Results — Run 1 (First Version)](#6-results--run-1-first-version-bitonic_sortcu)
