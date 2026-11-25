@@ -14,7 +14,6 @@
 7. [Results — Run 2 (Improved Benchmark)](#7-results--run-2-improved-benchmark-bitonic_benchmarkcu)
 8. [Graphs](#8-graphs)
 9. [Analysis and Observations](#9-analysis-and-observations)
-10. [Troubleshooting (Errors I Hit and How I Fixed Them)](#10-troubleshooting-errors-i-hit-and-how-i-fixed-them)
 11. [Conclusion](#11-conclusion)
 
 
@@ -358,19 +357,6 @@ Mostly yes. CPU times agree within a few percent (e.g. 2²⁰: 67.58 vs 67.28 ms
 
 ---
 
-## 10. Troubleshooting (Errors I Hit and How I Fixed Them)
-
-| # | Error message | Cause | Fix |
-|---|---|---|---|
-| 1 | `mkdir ... Access is denied.` | I was inside `C:\Program Files\Microsoft Visual Studio\...` (a protected folder). | `cd /d "%USERPROFILE%\Desktop"` and create the folder there. |
-| 2 | `nvcc fatal : Cannot find compiler 'cl.exe' in PATH` | Used a normal Command Prompt, so MSVC was not on the PATH. | Open **x64 Native Tools / Developer Command Prompt for VS** (runs `vcvarsall.bat`). Verify with `where cl`. |
-| 3 | `fatal error C1189: #error: MSVC/cl.exe with traditional preprocessor is used ... pass /Zc:preprocessor` | Newer CUDA headers (CCCL) require MSVC's standards-conforming preprocessor. | `set CL=/Zc:preprocessor` then compile again. (Alternative: define `CCCL_IGNORE_MSVC_TRADITIONAL_PREPROCESSOR_WARNING` to silence it.) |
-
-> `set CL=...` only lasts for that terminal window — run it again if you open a new one.
-
-![Error screenshot](screenshots/03_preprocessor_fix_and_first_run_start.jpeg)
-
----
 
 ## 11. Conclusion
 
