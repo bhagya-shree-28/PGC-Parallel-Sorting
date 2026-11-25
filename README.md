@@ -14,8 +14,7 @@
 7. [Results — Run 2 (Improved Benchmark)](#7-results--run-2-improved-benchmark-bitonic_benchmarkcu)
 8. [Graphs](#8-graphs)
 9. [Analysis and Observations](#9-analysis-and-observations)
-11. [Conclusion](#11-conclusion)
-
+10. [Conclusion](#10-conclusion)
 
 ---
 
@@ -123,7 +122,7 @@ Expected: a path ending in `...\bin\Hostx64\x64\cl.exe`.
 
 ### Step 3 — Create the project folder on the Desktop
 
-
+> Do **not** create it inside `C:\Program Files\...` — Windows gives *"Access is denied"* there.
 
 ```bat
 cd /d "%USERPROFILE%\Desktop"
@@ -147,7 +146,7 @@ Paste the code (CPU `std::sort`, bitonic kernel, `thrust::sort`, CUDA-event timi
 set CL=/Zc:preprocessor
 ```
 
-This tells MSVC to use the modern, standard-conforming preprocessor that newer CUDA headers require.
+This tells MSVC to use the modern, standard-conforming preprocessor that newer CUDA headers require. (See [Troubleshooting](#11-troubleshooting-errors-i-hit-and-how-i-fixed-them).)
 
 ### Step 6 — Compile
 
@@ -179,10 +178,16 @@ bitonic_sort.exe
 
 The program tests every size from 2¹⁶ to 2²⁴ and prints a block of results for each, then saves `sorting_results.csv`.
 
+### Step 8 — Look at the results and make a backup
 
-### Step 8 — Build the improved benchmark
+```bat
+notepad sorting_results.csv
+copy bitonic_sort.cu bitonic_sort_backup.cu
+```
 
-The first run showed a suspicious spike at 2¹⁶ . To get fair numbers, I wrote `bitonic_benchmark.cu`, which adds a **warm-up** and **averaging**:
+### Step 9 — Build the improved benchmark
+
+The first run showed a suspicious spike at 2¹⁶ (see the analysis). To get fair numbers, I wrote `bitonic_benchmark.cu`, which adds a **warm-up** and **averaging**:
 
 ```bat
 notepad bitonic_benchmark.cu
@@ -190,7 +195,7 @@ set CL=/Zc:preprocessor
 nvcc -O3 -std=c++17 bitonic_benchmark.cu -o bitonic_benchmark.exe
 ```
 
-### Step 9 — Run the improved benchmark
+### Step 10 — Run the improved benchmark
 
 ```bat
 bitonic_benchmark.exe
@@ -200,13 +205,14 @@ This prints "Performing GPU warm-up…", then the averaged results for every siz
 
 ![Build improved benchmark](screenshots/07_build_improved_benchmark.jpeg)
 
-### Step 10 — Confirm the output files
+### Step 11 — Confirm the output files
 
 ```bat
 dir
 ```
 
-You should see `.exe` file.
+You should see both `.exe` files and both `.csv` files.
+
 ![Final directory](screenshots/11_final_directory_listing.jpeg)
 
 ---
@@ -337,7 +343,7 @@ Mostly yes. CPU times agree within a few percent (e.g. 2²⁰: 67.58 vs 67.28 ms
 ---
 
 
-## 11. Conclusion
+## 10. Conclusion
 
 - A **GPU bitonic sort** was implemented in CUDA and compared against **`thrust::sort`** and the CPU's **`std::sort`** for sizes **2¹⁶ to 2²⁴**; all outputs were verified as correctly sorted.
 - After a GPU warm-up and averaging, the GPU was faster than the CPU at **every** size.
