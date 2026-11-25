@@ -7,7 +7,7 @@
 
 1. [Aim](#1-aim)
 2. [Tools and Setup](#2-tools-and-setup)
-3. [Background — The Concepts in Simple Words](#3-background--the-concepts-in-simple-words)
+3. [Concepts](#3-background--the-concepts-in-simple-words)
 4. [Step-by-Step Procedure](#4-step-by-step-procedure)
 5. [How the Timing Was Measured](#5-how-the-timing-was-measured)
 6. [Results — Run 1 (First Version)](#6-results--run-1-first-version-bitonic_sortcu)
@@ -50,7 +50,7 @@ Array sizes tested: **2¹⁶ (65,536) to 2²⁴ (16,777,216)** elements.
 
 ---
 
-## 3. Background — The Concepts in Simple Words
+## 3. Concepts
 
 ### 3.1 Why sort on a GPU?
 
@@ -96,8 +96,8 @@ The standard C++ sort (an introsort, O(n log n)) running on a **single CPU threa
 | **Kernel time** | Time spent only *inside* the GPU doing the sorting. |
 | **Total time** | Kernel time **plus** copying the array from CPU memory to GPU (Host→Device) and the sorted result back (Device→Host). |
 
-
 Copying across the PCIe bus is not free, so **total time is the fair number** to compare against the CPU — the CPU does not need to copy anything.
+
 ---
 
 ## 4. Step-by-Step Procedure
